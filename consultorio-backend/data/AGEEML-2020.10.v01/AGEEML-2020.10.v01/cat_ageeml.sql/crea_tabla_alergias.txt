@@ -1,0 +1,19 @@
+CREATE TABLE IF NOT EXISTS public.alergias_paciente
+(
+    id_alergia integer NOT NULL DEFAULT nextval('alergias_paciente_id_alergia_seq'::regclass),
+    id_paciente integer NOT NULL,
+    medicamentos boolean DEFAULT false,
+    anestesicos boolean DEFAULT false,
+    alimentos boolean DEFAULT false,
+    detalles text COLLATE pg_catalog."default",
+    CONSTRAINT alergias_paciente_pkey PRIMARY KEY (id_alergia),
+    CONSTRAINT alergias_paciente_id_paciente_fkey FOREIGN KEY (id_paciente)
+        REFERENCES public.pacientes (id_paciente) MATCH SIMPLE
+        ON UPDATE NO ACTION
+        ON DELETE CASCADE
+)
+
+TABLESPACE pg_default;
+
+ALTER TABLE IF EXISTS public.alergias_paciente
+    OWNER to postgres;

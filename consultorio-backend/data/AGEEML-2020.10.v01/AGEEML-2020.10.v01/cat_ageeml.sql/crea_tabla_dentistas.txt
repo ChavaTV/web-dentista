@@ -1,0 +1,11 @@
+CREATE TABLE IF NOT EXISTS public.dentistas
+(
+    id_dentista integer NOT NULL DEFAULT nextval('dentistas_id_seq'::regclass),
+    nombre character varying(100) COLLATE pg_catalog."default" NOT NULL,
+    CONSTRAINT dentistas_pkey PRIMARY KEY (id_dentista)
+)
+
+TABLESPACE pg_default;
+
+ALTER TABLE IF EXISTS public.dentistas
+    OWNER to postgres;

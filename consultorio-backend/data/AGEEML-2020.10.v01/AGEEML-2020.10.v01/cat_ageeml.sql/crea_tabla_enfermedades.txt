@@ -1,0 +1,18 @@
+CREATE TABLE IF NOT EXISTS public.enfermedades_paciente
+(
+    id_enfermedad integer NOT NULL DEFAULT nextval('enfermedades_paciente_id_enfermedad_seq'::regclass),
+    id_paciente integer NOT NULL,
+    diabetes boolean DEFAULT false,
+    hipertension boolean DEFAULT false,
+    otras_enfermedades text COLLATE pg_catalog."default",
+    CONSTRAINT enfermedades_paciente_pkey PRIMARY KEY (id_enfermedad),
+    CONSTRAINT enfermedades_paciente_id_paciente_fkey FOREIGN KEY (id_paciente)
+        REFERENCES public.pacientes (id_paciente) MATCH SIMPLE
+        ON UPDATE NO ACTION
+        ON DELETE CASCADE
+)
+
+TABLESPACE pg_default;
+
+ALTER TABLE IF EXISTS public.enfermedades_paciente
+    OWNER to postgres;

@@ -1,0 +1,36 @@
+CREATE TABLE IF NOT EXISTS public.pacientes
+(
+    id_paciente integer NOT NULL DEFAULT nextval('pacientes_id_paciente_seq'::regclass),
+    nombre character varying(100) COLLATE pg_catalog."default" NOT NULL,
+    edad smallint,
+    genero character varying(10) COLLATE pg_catalog."default",
+    lugar_nacimiento character varying(100) COLLATE pg_catalog."default",
+    fecha_nacimiento date,
+    ocupacion character varying(100) COLLATE pg_catalog."default",
+    escolaridad character varying(50) COLLATE pg_catalog."default",
+    estado_civil character varying(20) COLLATE pg_catalog."default",
+    calle character varying(100) COLLATE pg_catalog."default",
+    numero_ext character varying(10) COLLATE pg_catalog."default",
+    numero_int character varying(10) COLLATE pg_catalog."default",
+    telefono_casa character varying(15) COLLATE pg_catalog."default",
+    telefono_celular character varying(15) COLLATE pg_catalog."default",
+    religion character varying(50) COLLATE pg_catalog."default",
+    motivo_consulta text COLLATE pg_catalog."default",
+    padecimiento_actual text COLLATE pg_catalog."default",
+    id_dentista integer,
+    id_localidad integer,
+    CONSTRAINT pacientes_pkey PRIMARY KEY (id_paciente),
+    CONSTRAINT fk_pacientes_localidad FOREIGN KEY (id_localidad)
+        REFERENCES public.localidades (id_localidad) MATCH SIMPLE
+        ON UPDATE NO ACTION
+        ON DELETE NO ACTION,
+    CONSTRAINT pacientes_id_dentista_fkey FOREIGN KEY (id_dentista)
+        REFERENCES public.dentistas (id_dentista) MATCH SIMPLE
+        ON UPDATE NO ACTION
+        ON DELETE NO ACTION
+)
+
+TABLESPACE pg_default;
+
+ALTER TABLE IF EXISTS public.pacientes
+    OWNER to postgres;
