@@ -1,0 +1,82 @@
+{
+  "pacientes": {
+    "paciente_1": {
+      "nombre": "Juan Pérez",
+      "edad": 30,
+      "genero": "M",
+      "fecha_nacimiento": "1995-06-15",
+      "ocupacion": "Ingeniero",
+      "escolaridad": "Universidad",
+      "estado_civil": "Soltero",
+      "telefono_casa": "3312345678",
+      "telefono_celular": "3319876543",
+      "religion": "Ninguna",
+      "motivo_consulta": "Dolor de muelas",
+      "padecimiento_actual": "Caries",
+      "enfermedades": {
+        "diabetes": false,
+        "hipertension": false,
+        "otras": ""
+      },
+      "alergias": {
+        "medicamentos": false,
+        "anestesicos": false,
+        "alimentos": false,
+        "detalles": ""
+      }
+    },
+    "paciente_2": {
+      "nombre": "María López",
+      "edad": 25,
+      "genero": "F",
+      "fecha_nacimiento": "2000-01-20",
+      "ocupacion": "Estudiante",
+      "escolaridad": "Preparatoria",
+      "estado_civil": "Soltera",
+      "telefono_casa": "",
+      "telefono_celular": "3322334455",
+      "religion": "Católica",
+      "motivo_consulta": "Revisión general",
+      "padecimiento_actual": "",
+      "enfermedades": {
+        "diabetes": false,
+        "hipertension": false,
+        "otras": ""
+      },
+      "alergias": {
+        "medicamentos": false,
+        "anestesicos": false,
+        "alimentos": true,
+        "detalles": "Mariscos"
+      }
+    }
+  },
+  "dentistas": {
+    "dentista_1": {
+      "nombre": "Dr. Ramírez",
+      "especialidad": "Ortodoncia",
+      "telefono": "3311112222"
+    },
+    "dentista_2": {
+      "nombre": "Dra. Fernández",
+      "especialidad": "Endodoncia",
+      "telefono": "3322223333"
+    }
+  },
+  "citas": {
+    "cita_1": {
+      "paciente_id": "paciente_1",
+      "dentista_id": "dentista_1",
+      "fecha": "2025-08-21",
+      "hora": "14:00",
+      "descripcion": "Limpieza dental"
+    },
+    "cita_2": {
+      "paciente_id": "paciente_2",
+      "dentista_id": "dentista_2",
+      "fecha": "2025-08-22",
+      "hora": "10:30",
+      "descripcion": "Extracción de muela"
+    }
+  }
+}
