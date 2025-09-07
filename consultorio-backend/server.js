@@ -44,6 +44,40 @@ app.get('/pacientes', async (req, res) => {
   }
 });
 
+// Obtener citas por fecha
+app.get('/citas', async (req, res) => {
+  try {
+    const { fecha } = req.query;
+
+    if (!fecha) {
+      return res.status(400).json({ error: "Debe enviar una fecha en formato YYYY-MM-DD" });
+    }
+
+    const query = `
+      SELECT 
+        C.id_cita,
+        P.nombre AS paciente,
+        D.nombre AS dentista,
+        C.fecha,
+        TO_CHAR(C.hora, 'HH24:MI') AS hora,
+        C.descripcion
+      FROM public.citas AS C
+      INNER JOIN public.dentistas AS D ON D.id_dentista = C.id_dentista
+      INNER JOIN public.pacientes AS P ON P.id_paciente = C.id_paciente
+      WHERE C.fecha = $1
+      ORDER BY C.hora ASC
+    `;
+
+    const result = await pool.query(query, [fecha]);
+
+    res.json(result.rows);
+  } catch (err) {
+    console.error("Error al obtener las citas:", err);
+    res.status(500).json({ error: "Error al obtener las citas" });
+  }
+});
+
+
 // Ejemplo de ruta para obtener dentistas
 app.get('/dentistas', async (req, res) => {
   try {
@@ -112,17 +146,16 @@ app.get('/colonias', async (req, res) => {
   }
 });
 
-
 // obtiene las ciudades
-
-
-
 app.listen(PORT, () => {
   console.log(`Servidor backend escuchando en http://localhost:${PORT}`);
 });
 
+// ================================
+// ========= INSERTAR =============
+// ================================
 
-//insert en la BD
+//inserta pacientes
 app.post('/pacientes', async (req, res) => {
   try {
     const {
@@ -200,6 +233,44 @@ app.post('/pacientes', async (req, res) => {
     res.status(500).json({ error: 'Error al registrar paciente' });
   }
 });
+
+// Registrar nueva cita
+app.post('/citas', async (req, res) => {
+  try {
+    const { id_paciente, id_dentista, fecha, hora, descripcion } = req.body;
+
+    // Validación mínima
+    if (!id_paciente || !id_dentista || !fecha || !hora) {
+      return res.status(400).json({ error: "Paciente, dentista, fecha y hora son obligatorios" });
+    }
+
+    const query = `
+      INSERT INTO citas (id_paciente, id_dentista, fecha, hora, descripcion)
+      VALUES ($1, $2, $3, $4, $5)
+      RETURNING id_cita;
+    `;
+
+    const values = [
+      parseInt(id_paciente, 10),
+      parseInt(id_dentista, 10),
+      fecha,      // formato: "YYYY-MM-DD"
+      hora,       // formato: "HH:MM"
+      descripcion || null
+    ];
+
+    const result = await pool.query(query, values);
+
+    res.status(201).json({
+      message: "Cita registrada exitosamente",
+      id_cita: result.rows[0].id_cita
+    });
+
+  } catch (error) {
+    console.error("Error al registrar cita:", error);
+    res.status(500).json({ error: "Error al registrar la cita" });
+  }
+});
+
 
 
 // app.post('/pacientes', async (req, res) => {
