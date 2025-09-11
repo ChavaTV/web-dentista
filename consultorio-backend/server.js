@@ -79,15 +79,15 @@ app.get('/citas', async (req, res) => {
 
 
 // Ejemplo de ruta para obtener dentistas
-app.get('/dentistas', async (req, res) => {
-  try {
-    const result = await pool.query('SELECT * FROM public.dentistas');
-    res.json(result.rows);
-  } catch (err) {
-    console.error('Error al obtener dentistas:', err);
-    res.status(500).json({ error: 'Error al obtener dentistas' });
-  }
-});
+// app.get('/dentistas', async (req, res) => {
+//   try {
+//     const result = await pool.query('SELECT * FROM public.dentistas');
+//     res.json(result.rows);
+//   } catch (err) {
+//     console.error('Error al obtener dentistas:', err);
+//     res.status(500).json({ error: 'Error al obtener dentistas' });
+//   }
+// });
 
 // Obtiene los estados
 app.get('/estados', async (req, res) => {
