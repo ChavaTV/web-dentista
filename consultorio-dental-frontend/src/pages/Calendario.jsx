@@ -5,6 +5,10 @@ import "react-calendar/dist/Calendar.css";
 import axios from 'axios';
 import { useNavigate } from "react-router-dom";
 
+// CONEXIN FIREBASE PRODUCTIVO
+import { db } from "../firebaseConfig"; 
+import { collection, query, where, getDocs, getDoc } from "firebase/firestore";
+
 const Calendario = () => {
   const [date, setDate] = useState(new Date());
   const [appointments, setAppointments] = useState([]);
@@ -12,19 +16,62 @@ const Calendario = () => {
 
   // Consultar las citas del backend
   useEffect(() => {
-    const fetchAppointments = async () => {
+  const fetchAppointments = async () => {
       try {
-        const response = await fetch(
-          `http://localhost:4000/citas?fecha=${date.toISOString().split("T")[0]}`
-        );
-        const data = await response.json();
-        setAppointments(data);
+        const formattedDate = date.toISOString().split("T")[0];
+        const q = query(collection(db, "citas"), where("fecha", "==", formattedDate));
+        const querySnapshot = await getDocs(q);
+
+        const citas = [];
+
+        for (const docSnap of querySnapshot.docs) {
+          const data = docSnap.data();
+
+          let paciente = null;
+          let dentista = null;
+
+          if (data.paciente_ref) {
+            const pacienteDoc = await getDoc(data.paciente_ref);
+            paciente = pacienteDoc.exists() ? { id: pacienteDoc.id, ...pacienteDoc.data() } : null;
+          }
+
+          if (data.dentista_ref) {
+            const dentistaDoc = await getDoc(data.dentista_ref);
+            dentista = dentistaDoc.exists() ? { id: dentistaDoc.id, ...dentistaDoc.data() } : null;
+          }
+
+          citas.push({ id: docSnap.id, ...data, paciente, dentista });
+        }
+
+        // Ordenar por fecha y hora
+        citas.sort((a, b) => {
+          const dateA = new Date(`${a.fecha}T${a.hora}`);
+          const dateB = new Date(`${b.fecha}T${b.hora}`);
+          return dateA - dateB; // menor → mayor
+        });
+
+        setAppointments(citas);
       } catch (error) {
         console.error("Error al obtener citas:", error);
       }
     };
+
     fetchAppointments();
   }, [date]);
+  // useEffect(() => {
+  //   const fetchAppointments = async () => {
+  //     try {
+  //       const response = await fetch(
+  //         `http://localhost:4000/citas?fecha=${date.toISOString().split("T")[0]}`
+  //       );
+  //       const data = await response.json();
+  //       setAppointments(data);
+  //     } catch (error) {
+  //       console.error("Error al obtener citas:", error);
+  //     }
+  //   };
+  //   fetchAppointments();
+  // }, [date]);
 
   // Guardar cambios en cita editada
   const handleSave = async (id, updated) => {
@@ -37,7 +84,7 @@ const Calendario = () => {
       setEditing(null);
       // refrescar lista
       setAppointments((prev) =>
-        prev.map((cita) => (cita.id_cita === id ? { ...cita, ...updated } : cita))
+        prev.map((cita) => (cita.id === id ? { ...cita, ...updated } : cita))
       );
     } catch (error) {
       console.error("Error al actualizar cita:", error);
@@ -48,18 +95,18 @@ const Calendario = () => {
   const navigate = useNavigate();
 
   // actualizar la hora de una cita en el array appointments sin mutar
-  const handleTimeChange = (id_cita, timeValue) => {
+  const handleTimeChange = (id, timeValue) => {
     setAppointments(prev =>
-      prev.map(it => it.id_cita === id_cita ? { ...it, hora: timeValue } : it)
+      prev.map(it => it.id === id ? { ...it, hora: timeValue } : it)
     );
   };
 
   return (
-    <div className="min-h-screen bg-[#fdfcfa] p-6 flex flex-col items-center">
+    <div className="min-h-screen bg-gradient-to-br from-[#b68dfc] via-[#9ecfff] to-[#7ef0d9] p-6 flex flex-col items-center">
       {/* Botón Regresar */}
       <div className="absolute top-6 left-6">
         <button
-          onClick={() => navigate('/')}
+          onClick={() => navigate("/Dashboard")}
           className="bg-[#6099ad] hover:bg-[#4b5849] text-white px-4 py-2 rounded-xl shadow-md transition-all hover:scale-105"
         >
           Menú Principal
@@ -98,16 +145,16 @@ const Calendario = () => {
           <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 gap-6">
             {appointments.map((cita) => (
               <div
-                key={cita.id_cita}
+                key={cita.id}
                 className="bg-white p-4 rounded-xl shadow hover:shadow-lg transition"
               >
-                {editing === cita.id_cita ? (
+                {editing === cita.id ? (
                   <>
                     <input
                       type="time"
                       value={ (cita.hora || "").slice(0,5) }   // "12:46:00" -> "12:46"
                       step="60"
-                      onChange={(e) => handleTimeChange(cita.id_cita, e.target.value)}
+                      // onChange={(e) => handleTimeChange(cita.id, e.target.value)}
                       className="w-full border rounded p-2 mb-2"
                     />
 
@@ -117,18 +164,18 @@ const Calendario = () => {
                       className="w-full border rounded p-2 mb-2"
                     />
                     <button
-                      onClick={() =>
-                        handleSave(cita.id_cita, {
-                          hora: cita.hora,
-                          descripcion: cita.descripcion,
-                        })
-                      }
+                      // onClick={() =>
+                      //   handleSave(cita.id, {
+                      //     hora: cita.hora,
+                      //     descripcion: cita.descripcion,
+                      //   })
+                      // }
                       className="bg-green-600 text-white px-3 py-1 rounded hover:bg-green-700 mr-2"
                     >
                       Guardar
                     </button>
                     <button
-                      onClick={() => setEditing(null)}
+                      // onClick={() => setEditing(null)}
                       className="bg-gray-400 text-white px-3 py-1 rounded hover:bg-gray-500"
                     >
                       Cancelar
@@ -137,20 +184,17 @@ const Calendario = () => {
                 ) : (
                   <>
                     <p className="font-bold text-[#5f6c5d]">
-                      {new Date(cita.hora).toLocaleTimeString("es-ES", {
-                        hour: "2-digit",
-                        minute: "2-digit",
-                      })}
+                      Hora: {cita.hora}
                     </p>
                     <p className="text-gray-700">{cita.descripcion}</p>
                     <p className="text-sm text-[#6d5e8d]">
-                      Paciente: {cita.paciente}
+                     Paciente: {cita.paciente?.nombre || "Desconocido"}
                     </p>
                     <p className="text-sm text-[#6d5e8d]">
-                      Doctor: {cita.dentista}
+                      Doctor: {cita.dentista?.nombre || "Desconocido"}
                     </p>
                     <button
-                      onClick={() => setEditing(cita.id_cita)}
+                      onClick={() => setEditing(cita.id)}
                       className="mt-3 bg-purple-600 text-white px-3 py-1 rounded hover:bg-purple-700"
                     >
                       Editar
