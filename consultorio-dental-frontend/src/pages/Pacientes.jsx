@@ -4,6 +4,8 @@ import SignatureCanvas from "react-signature-canvas";
 import { useNavigate } from "react-router-dom";
 import axios from 'axios';
 
+import { collection, addDoc } from "firebase/firestore";
+import { db } from "../firebaseConfig"; // tu configuración
 
 const PasoAnimado = ({ children }) => (
   <motion.div
@@ -35,6 +37,7 @@ const Pacientes = () => {
     estadoId: "",
     municipioId: "",
     coloniaId: "",   
+    cp: "",   
     telefonoCasa: "",
     telefonoCelular: "",
     religion: "",
@@ -61,7 +64,7 @@ const handleSubmit = async () => {
       nombre: formData.nombre,
       edad: formData.edad ? parseInt(formData.edad, 10) : null,
       genero: formData.genero,
-      lugar_nacimiento: formData.lugarNacimiento,
+      // lugar_nacimiento: formData.lugarNacimiento,
       fecha_nacimiento: formData.fechaNacimiento || null,
       ocupacion: formData.ocupacion,
       escolaridad: formData.escolaridad,
@@ -74,8 +77,15 @@ const handleSubmit = async () => {
       religion: formData.religion,
       motivo_consulta: formData.motivoConsulta,
       padecimiento_actual: formData.padecimientoActual,
-      id_localidad: formData.coloniaId ? parseInt(formData.coloniaId, 10) : null, // 👈 FK colonia
-      id_dentista: formData.dentista ? parseInt(formData.dentista, 10) : null,    // 👈 FK dentista
+      direccion: {
+        cp: formData.codigoPostal,
+        estadoId: formData.estadoId,
+        municipioId: formData.municipioId,
+        ciudadId: formData.ciudadId,
+        coloniaId: formData.coloniaId,
+      },
+      // id_localidad: formData.coloniaId ? parseInt(formData.coloniaId, 10) : null, // 👈 FK colonia
+      //id_dentista: formData.dentista ? parseInt(formData.dentista, 10) : null,    // 👈 FK dentista
       enfermedades: {
         diabetes: formData.enfermedades.diabetes,
         hipertension: formData.enfermedades.hipertension,
@@ -142,21 +152,28 @@ const handleSubmit = async () => {
     // ESTADOS
   //const [estadosBD, setEstadosBD] = useState([]);
     // 3. Hooks para cargar estados y municipios
+  // const [estadosBD, setEstadosBD] = useState([]);
+  // const [municipioBD, setMunicipiosBD] = useState([]);
+  // const [coloniasBD, setColoniasBD] = useState([]);
+
   const [estadosBD, setEstadosBD] = useState([]);
-  const [municipioBD, setMunicipiosBD] = useState([]);
+  const [municipiosBD, setMunicipiosBD] = useState([]);
   const [coloniasBD, setColoniasBD] = useState([]);
+
+
+
   //OBTENER ESTADOS
-  useEffect(() => {
-    const fetchEstados = async () => {
-      try {
-        const res = await axios.get('http://localhost:4000/estados');
-        setEstadosBD(res.data);
-      } catch (err) {
-        console.error('Error al cargar estados', err);
-      }
-    };
-    fetchEstados();
-  }, []);
+  // useEffect(() => {
+  //   const fetchEstados = async () => {
+  //     try {
+  //       const res = await axios.get('http://localhost:4000/estados');
+  //       setEstadosBD(res.data);
+  //     } catch (err) {
+  //       console.error('Error al cargar estados', err);
+  //     }
+  //   };
+  //   fetchEstados();
+  // }, []);
 
   // Municipios
   // useEffect(() => {
@@ -167,52 +184,68 @@ const handleSubmit = async () => {
   //     .then(res => setMunicipioBD(res.data))
   //     .catch(console.error);
   // }, [formData.estadoId]);
-  useEffect(() => {
-  if (!formData.estadoId) {
-    setMunicipiosBD([]);
-    return;
-  }
-  const fetchMunicipios = async () => {
-    try {
-      const res = await axios.get('http://localhost:4000/municipios', {
-        params: { estadoId: formData.estadoId }
-      });
-      setMunicipiosBD(res.data);
-    } catch (err) {
-      console.error('Error al cargar municipios', err);
-    }
-  };
-  fetchMunicipios();
-}, [formData.estadoId]);
+   useEffect(() => {
+    fetchEstados();
+  }, []);
+//   useEffect(() => {
+//   if (!formData.estadoId) {
+//     setMunicipiosBD([]);
+//     return;
+//   }
+//   const fetchMunicipios = async () => {
+//     try {
+//       const res = await axios.get('http://localhost:4000/municipios', {
+//         params: { estadoId: formData.estadoId }
+//       });
+//       setMunicipiosBD(res.data);
+//     } catch (err) {
+//       console.error('Error al cargar municipios', err);
+//     }
+//   };
+//   fetchMunicipios();
+// }, [formData.estadoId]);
 
 // useEffect colonia
-useEffect(() => {
-  if (!formData.municipioId) {
-    setColoniasBD([]);
-    return;
-  }
-  const fetchColonias = async () => {
-    try {
-      const res = await axios.get('http://localhost:4000/colonias', {
-        params: { municipioId: formData.municipioId }
-      });
-      setColoniasBD(res.data);
-    } catch (err) {
-      console.error('Error al cargar colonias', err);
-    }
-  };
-  fetchColonias();
-}, [formData.municipioId]);
+// useEffect(() => {
+//   if (!formData.municipioId) {
+//     setColoniasBD([]);
+//     return;
+//   }
+//   const fetchColonias = async () => {
+//     try {
+//       const res = await axios.get('http://localhost:4000/colonias', {
+//         params: { municipioId: formData.municipioId }
+//       });
+//       setColoniasBD(res.data);
+//     } catch (err) {
+//       console.error('Error al cargar colonias', err);
+//     }
+//   };
+//   fetchColonias();
+// }, [formData.municipioId]);
 
 
   const sigCanvas = useRef();
 
-  const handleChange = (e) => {
+const handleChange = (e) => {
     const { name, value } = e.target;
-    setFormData((prev) => ({
-      ...prev,
-      [name]: value,
-    }));
+    setFormData((prev) => ({ ...prev, [name]: value }));
+
+    if (name === "estadoId") {
+      setMunicipiosBD([]);
+      setColoniasBD([]);
+      fetchMunicipios(value);
+    }
+
+    // if (name === "cp" && value.length === 5) {
+    //   setColoniasBD([]);
+    //   fetchColonias(value);
+    // }
+    //fetchColonias = async (estadoId, municipioId) municipioId
+    if (name === "municipioId") {
+      setColoniasBD([]);
+      fetchColonias(formData.estadoId, value);
+    }
   };
 
   const toggleEnfermedad = (key) => {
@@ -241,6 +274,130 @@ useEffect(() => {
 
   const pasosTotales = 5;
 
+  // estados API COPOMEX funcion get_estados
+  const fetchEstados = async () => {
+    try {
+      
+      //PRUEBAS 
+      const res = await fetch('/api/dipomex/v1/estados', {
+        headers: {
+          APIKEY: '272406fa9058c2494438c4872b8dba1450c0cbc1'
+        }
+      });
+      // PRODUCTIVO
+      // const res = await fetch("https://api.tau.com.mx/dipomex/v1/estados", {
+      //   method: "GET",
+      //   headers: {
+      //     APIKEY: "272406fa9058c2494438c4872b8dba1450c0cbc1", // 
+      //   },
+      // });
+
+      if (!res.ok) {
+        throw new Error(`Error: ${res.status}`);
+      }
+
+      const data = await res.json();
+      
+      if (!data.estados || !Array.isArray(data.estados)) {
+        console.error("⚠️ No llegaron estados válidos:", data);
+        return;
+      }
+
+      // Normalizamos a un arreglo de objetos con id y nombre
+      const estados = data.estados.map((item) => ({
+        id: item.ESTADO_ID,
+        nombre: item.ESTADO,
+      }));
+
+      setEstadosBD(estados);
+      console.log("✅ Estados cargados:", estados);
+    } catch (err) {
+      console.error("❌ Error al consultar estados en DIPOMEX:", err);
+    }
+  };
+
+
+const fetchMunicipios = async (estadoId) => {
+  try {
+    // const res = await fetch(
+    //   `https://api.copomex.com/query/get_municipio_por_estado/${estadoId}?token=pruebas`
+    // );
+    // PRUEBAS
+    const res = await fetch(`/api/dipomex/v1/municipios?id_estado=${estadoId}`, {
+        headers: {
+          APIKEY: '272406fa9058c2494438c4872b8dba1450c0cbc1'
+        }
+      });
+    const data = await res.json();
+
+      if (!data.municipios || !Array.isArray(data.municipios)) {
+        console.error("⚠️ No llegaron municipios válidos:", data);
+        return;
+      }
+    
+    const municipios = data.municipios.map((item) => ({
+      id: item.MUNICIPIO_ID,
+      nombre: item.MUNICIPIO,
+      id_estado: item.ESTADO_ID,
+    }));
+    
+    setMunicipiosBD(municipios);
+  } catch (err) {
+    console.error("❌ Error al consultar municipios en Copomex:", err);
+  }
+};
+
+  // PRUEBAS DE API DE COLONIAS
+const fetchColonias = async (estadoId, municipioId) => {
+  try {
+    // const res = await fetch(
+    //   `https://api.copomex.com/query/get_colonia_por_cp/${cp}?token=pruebas`
+    // );
+    
+    // PRUEBAS
+    const res = await fetch(`/api/dipomex/v1/colonias?id_estado=${estadoId}&id_mun=${municipioId}`, {
+        method: 'GET',
+        headers: {
+          APIKEY: '272406fa9058c2494438c4872b8dba1450c0cbc1'
+        }
+      });
+    const data = await res.json();
+
+      if (!data.colonias || !Array.isArray(data.colonias)) {
+        console.error("⚠️ No llegaron colonias válidos:", data);
+        return;
+      }
+      debugger
+      const colonias = data.colonias.map((item) => ({
+        id: item.ASENTA_ID,
+        nombre: item.COLONIA,
+        cp: item.CP,
+        id_estado: item.ESTADO_ID,
+        id_municipio: item.MUNICIPIO_ID,
+      }));
+    //     const municipios = data.municipios.map((item) => ({
+    //   id: item.MUNICIPIO_ID,
+    //   nombre: item.MUNICIPIO,
+    //   id_estado: item.ESTADO_ID,
+    // }));
+
+    setColoniasBD(colonias);
+  } catch (err) {
+    console.error("❌ Error al consultar colonias en Copomex:", err);
+  }
+};
+
+
+  const guardarPaciente = async () => {
+    try {
+      await addDoc(collection(db, "pacientes"), formData);
+      alert("Paciente guardado correctamente");
+    } catch (error) {
+      console.error("Error al guardar paciente:", error);
+    }
+  };
+
+
   const siguientePaso = () => setPaso((prev) => Math.min(prev + 1, pasosTotales));
   const pasoAnterior = () => setPaso((prev) => Math.max(prev - 1, 1));
 
@@ -251,7 +408,7 @@ useEffect(() => {
       {/* botón regreso */}
       <div className="mb-4">
         <button
-          onClick={() => navigate('/', { replace: false })}
+          onClick={() => navigate("/Dashboard")}
           className="bg-[#5f6c5d] hover:bg-[#4b5849] text-white px-4 py-2 rounded-xl
                      transition-all shadow-md hover:scale-105"
         >
@@ -280,63 +437,132 @@ useEffect(() => {
           <PasoAnimado key="paso2">
             <h2 className="text-xl font-bold mb-4">Dirección</h2>
             <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
-              <label htmlFor="estadoId" className="block font-medium">Estado</label>
-                <select
-                  name="estadoId"
-                  value={formData.estadoId}
-                    onChange={(e) => {
-                      handleChange(e);        // guarda estadoId
-                      setFormData(prev => ({  // limpia municipioId cuando cambies de estado
-                        ...prev,
-                        municipioId: ''
-                      }));
-                    }}
-                  className="input"
-                >
-                  <option value="">Seleccione un estado</option>
-                  {estadosBD.map((estado) => (
-                    <option key={estado.id_estado} value={estado.id_estado}>
-                      {estado.nombre}
-                    </option>
-                  ))}
-                </select>
-              <label htmlFor="municipioId" className="block font-medium ">Municipio</label>
-                <select
-                  name="municipioId"
-                  value={formData.municipioId}
-                  onChange={handleChange}
-                  className="input"
-                  disabled={!formData.estadoId}
-                >
-                  <option value="">Seleccione un municipio</option>
-                  {municipioBD.map((mun) => (
-                    <option key={mun.id_municipio} value={mun.id_municipio}>
-                      {mun.nombre}
-                    </option>
-                  ))}
-                </select>
-                <label htmlFor="coloniaId" className="block font-medium ">Colonia / Localidad</label>
-                <select
-                  name="coloniaId"
-                  value={formData.coloniaId}
-                  onChange={handleChange}
-                  className="input"
-                  disabled={!formData.municipioId}
-                >
-                  <option value="">Seleccione una colonia</option>
-                  {coloniasBD.map((col) => (
-                    <option key={col.id_localidad} value={col.id_localidad}>
+                    {/* Estado */}
+                    <label className="block font-medium mb-1">Estado</label>
+                    <select
+                      name="estadoId"
+                      value={formData.estadoId}
+                      onChange={handleChange}
+                      className="w-full p-2 border rounded mb-4"
+                    >
+                      <option value="">Selecciona un estado</option>
+                      {estadosBD.map((e) => (
+                        <option key={e.id} value={e.id}>
+                          {e.nombre}
+                        </option>
+                      ))}
+                    </select>
+
+                    {/* Municipio */}
+                      <label className="block font-medium mb-1">Municipio</label>
+                      <select
+                        name="municipioId"
+                        value={formData.municipioId}
+                        onChange={handleChange}
+                        className="w-full p-2 border rounded mb-4"
+                        disabled={!formData.estadoId}
+                      >
+                        <option value="">Selecciona un municipio</option>
+                        {municipiosBD.map((m) => (
+                          <option key={m.id} value={m.id}>
+                            {m.nombre}
+                          </option>
+                        ))}
+                      </select>
+
+                            {/* Código Postal 
+                                     <label className="block font-medium mb-1">Código Postal</label>
+                      <input
+                        type="text"
+                        name="cp"
+                        value={formData.cp}
+                        onChange={handleChange}
+                        className="w-full p-2 border rounded mb-4"
+                        placeholder="Ejemplo: 36557"
+                      />
+                            */}
+             
+
+                      {/* Colonia */}
+                      <label className="block font-medium mb-1">Colonia</label>
+                      <select
+                        name="coloniaId"
+                        value={formData.coloniaId}
+                        onChange={handleChange}
+                        className="w-full p-2 border rounded mb-4"
+                        disabled={coloniasBD.length === 0}
+                      >
+                        <option value="">Selecciona una colonia</option>
+                        {coloniasBD.map((c) => (
+                          <option key={c.id} value={c.id}>
+                            {c.nombre}
+                          </option>
+                        ))}
+                      </select>
+              {/* Código Postal
+              <input
+                name="codigoPostal"
+                placeholder="Código Postal"
+                className="input"
+                value={formData.codigoPostal || ""}
+                onChange={async (e) => {
+                  const cp = e.target.value;
+                  setFormData((prev) => ({ ...prev, codigoPostal: cp }));
+
+                  if (cp.length === 5) {
+                    await fetchColonias(cp);
+                  }
+                }}
+              /> */}
+
+              {/* Colonia
+              <select
+                name="coloniaId"
+                value={formData.coloniaId || ""}
+                onChange={handleChange}
+                className="input"
+                disabled={coloniasBD.length === 0}
+              >
+                <option value="">Seleccione una colonia</option>
+                {coloniasBD.map((col) => (
+                    <option key={col.id} value={col.id}>
                       {col.nombre}
                     </option>
-                  ))}
-                </select>
-              <input name="calle" placeholder="Calle" className="input" onChange={handleChange} />
+                ))}
+              </select>
+
+              { Estado (readonly) }
+                <input
+                  name="estadoId"
+                  value={formData.estadoId || ""}
+                  className="input"
+                  readOnly
+                />
+
+                {/* Municipio (readonly) }
+                <input
+                  name="municipioId"
+                  value={formData.municipioId || ""}
+                  className="input"
+                  readOnly
+                />
+
+                { Ciudad (readonly, opcional) }
+                <input
+                  name="ciudad"
+                  value={formData.ciudad || ""}
+                  className="input"
+                  readOnly
+                /> */}
+
+              {/* <input name="calle" placeholder="Calle" className="input" onChange={handleChange} /> */}
               <input name="numeroExt" placeholder="Número exterior" className="input" onChange={handleChange} />
               <input name="numeroInt" placeholder="Número interior" className="input" onChange={handleChange} />
               <input name="telefonoCasa" placeholder="Tel. casa" className="input" onChange={handleChange} />
               <input name="telefonoCelular" placeholder="Celular" className="input" onChange={handleChange} />
               <input name="religion" placeholder="Religión" className="input" onChange={handleChange} />
             </div>
+
           </PasoAnimado>
         )}
 
