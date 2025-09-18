@@ -3,7 +3,7 @@ name: Deploy to Firebase Hosting
 on:
   push:
     branches:
-      - main   # 👈 o la rama que uses para producción
+      - desarrollo   # 👈 o la rama que uses para producción
 
 jobs:
   build_and_deploy:
