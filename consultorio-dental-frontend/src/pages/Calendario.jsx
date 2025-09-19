@@ -16,7 +16,10 @@ const Calendario = () => {
 
   // Consultar las citas del backend
   useEffect(() => {
-  const fetchAppointments = async () => {
+    fetchAppointments();
+  }, [date]);
+
+    const fetchAppointments = async () => {
       try {
         const formattedDate = date.toISOString().split("T")[0];
         const q = query(collection(db, "citas"), where("fecha", "==", formattedDate));
@@ -55,9 +58,6 @@ const Calendario = () => {
         console.error("Error al obtener citas:", error);
       }
     };
-
-    // fetchAppointments();
-  }, [date]);
  
   // Guardar cambios en cita editada local
   // const handleSave = async (id, updated) => {
