@@ -279,18 +279,18 @@ const handleChange = (e) => {
     try {
       
       //PRUEBAS 
-      const res = await fetch('/api/dipomex/v1/estados', {
-        headers: {
-          APIKEY: '272406fa9058c2494438c4872b8dba1450c0cbc1'
-        }
-      });
-      // PRODUCTIVO
-      // const res = await fetch("https://api.tau.com.mx/dipomex/v1/estados", {
-      //   method: "GET",
+      // const res = await fetch('/api/dipomex/v1/estados', {
       //   headers: {
-      //     APIKEY: "272406fa9058c2494438c4872b8dba1450c0cbc1", // 
-      //   },
+      //     APIKEY: '272406fa9058c2494438c4872b8dba1450c0cbc1'
+      //   }
       // });
+      //PRODUCTIVO
+      const res = await fetch("https://api.tau.com.mx/dipomex/v1/estados", {
+        method: "GET",
+        headers: {
+          APIKEY: "272406fa9058c2494438c4872b8dba1450c0cbc1", // 
+        },
+      });
 
       if (!res.ok) {
         throw new Error(`Error: ${res.status}`);
@@ -322,12 +322,19 @@ const fetchMunicipios = async (estadoId) => {
     // const res = await fetch(
     //   `https://api.copomex.com/query/get_municipio_por_estado/${estadoId}?token=pruebas`
     // );
-    // PRUEBAS
-    const res = await fetch(`/api/dipomex/v1/municipios?id_estado=${estadoId}`, {
+    // productivo 
+    const res = await fetch(`https://api.tau.com.mx/dipomex/v1/municipios?id_estado=${estadoId}`, {
         headers: {
           APIKEY: '272406fa9058c2494438c4872b8dba1450c0cbc1'
         }
-      });
+    });
+    // PRUEBAS
+    // const res = await fetch(`/api/dipomex/v1/municipios?id_estado=${estadoId}`, {
+    //     headers: {
+    //       APIKEY: '272406fa9058c2494438c4872b8dba1450c0cbc1'
+    //     }
+    // });
+
     const data = await res.json();
 
       if (!data.municipios || !Array.isArray(data.municipios)) {
@@ -353,14 +360,21 @@ const fetchColonias = async (estadoId, municipioId) => {
     // const res = await fetch(
     //   `https://api.copomex.com/query/get_colonia_por_cp/${cp}?token=pruebas`
     // );
-    
-    // PRUEBAS
-    const res = await fetch(`/api/dipomex/v1/colonias?id_estado=${estadoId}&id_mun=${municipioId}`, {
+    //
+    // productivo
+      const res = await fetch(`https://api.tau.com.mx/dipomex/v1/colonias?id_estado=${estadoId}&id_mun=${municipioId}`, {
         method: 'GET',
         headers: {
           APIKEY: '272406fa9058c2494438c4872b8dba1450c0cbc1'
         }
       });
+    // PRUEBAS
+    // const res = await fetch(`/api/dipomex/v1/colonias?id_estado=${estadoId}&id_mun=${municipioId}`, {
+    //     method: 'GET',
+    //     headers: {
+    //       APIKEY: '272406fa9058c2494438c4872b8dba1450c0cbc1'
+    //     }
+    //   });
     const data = await res.json();
 
       if (!data.colonias || !Array.isArray(data.colonias)) {
