@@ -63,7 +63,8 @@ const Agendar = () => {
   //   };
   //   fetchPacientes();
   // }, []);
-  // cargar pacientes desde Firestore
+
+  // cargar dentistas desde Firestore
   useEffect(() => {
     const fetchDentistas = async () => {
       try {
@@ -188,21 +189,28 @@ const Agendar = () => {
   return (
     <div className="min-h-screen flex items-center justify-center bg-gradient-to-r from-[#d0bcff] to-[#c8f7c5] p-6">
       {/* Botón Regresar */}
-      <div className="absolute top-6 left-6">
+      {/* <div className="absolute top-6 left-6">
         <button
           onClick={() => navigate("/Dashboard")}
           className="bg-[#6099ad] hover:bg-[#4b5849] text-white px-4 py-2 rounded-xl shadow-md transition-all hover:scale-105"
         >
           Menú Principal
         </button>
-      </div>
-
-
-
+      </div> */}
       <div className="w-full max-w-2xl bg-white rounded-2xl shadow-xl p-8">
         <h2 className="text-3xl font-bold text-center text-[#6d5e8d] mb-6">
           📅 Agendar Cita
         </h2>
+      {/* Botón Regresar */}
+      <div className="mb-6 flex justify-center">
+        <button
+          onClick={() => navigate("/Dashboard")}
+          className="bg-blue-400 hover:bg-blue-500 text-white px-5 py-2 rounded-xl
+                     transition-all shadow-md hover:scale-105"
+        >
+          Menú Principal
+        </button>
+      </div>
 
         <form onSubmit={handleSubmit} className="space-y-6">
           {/* Paciente */}
