@@ -273,133 +273,231 @@ const handleChange = (e) => {
   );
 
   const pasosTotales = 5;
-
+  
+  const BACKEND_URL = "https://consultorio-backend-hl3t3oufm-dev-chavas-projects.vercel.app"; 
   // estados API COPOMEX funcion get_estados
-  const fetchEstados = async () => {
-    try {
+  // const fetchEstados = async () => {
+  //   try {
       
-      //PRUEBAS 
-      // const res = await fetch('/api/dipomex/v1/estados', {
-      //   headers: {
-      //     APIKEY: '272406fa9058c2494438c4872b8dba1450c0cbc1'
-      //   }
-      // });
-      //PRODUCTIVO
-      const res = await fetch("https://api.tau.com.mx/dipomex/v1/estados", {
-        method: "GET",
-        headers: {
-          APIKEY: "272406fa9058c2494438c4872b8dba1450c0cbc1", // 
-        },
-      });
+  //     //PRUEBAS 
+  //     // const res = await fetch('/api/dipomex/v1/estados', {
+  //     //   headers: {
+  //     //     APIKEY: '272406fa9058c2494438c4872b8dba1450c0cbc1'
+  //     //   }
+  //     // });
+  //     //PRODUCTIVO
+  //     // const res = await fetch("https://api.tau.com.mx/dipomex/v1/estados", {
+  //     //   method: "GET",
+  //     //   headers: {
+  //     //     APIKEY: "272406fa9058c2494438c4872b8dba1450c0cbc1", // 
+  //     //   },
+  //     // });
+  //     // DESPLIEGUE
+  //     const res = await fetch(`${BACKEND_URL}/api/estados`);
 
-      if (!res.ok) {
-        throw new Error(`Error: ${res.status}`);
-      }
+  //     if (!res.ok) {
+  //       throw new Error(`Error: ${res.status}`);
+  //     }
 
-      const data = await res.json();
+  //     const data = await res.json();
       
-      if (!data.estados || !Array.isArray(data.estados)) {
-        console.error("⚠️ No llegaron estados válidos:", data);
-        return;
-      }
+  //     if (!data.estados || !Array.isArray(data.estados)) {
+  //       console.error("⚠️ No llegaron estados válidos:", data);
+  //       return;
+  //     }
 
-      // Normalizamos a un arreglo de objetos con id y nombre
-      const estados = data.estados.map((item) => ({
-        id: item.ESTADO_ID,
-        nombre: item.ESTADO,
-      }));
+  //     // Normalizamos a un arreglo de objetos con id y nombre
+  //     const estados = data.estados.map((item) => ({
+  //       id: item.ESTADO_ID,
+  //       nombre: item.ESTADO,
+  //     }));
 
-      setEstadosBD(estados);
-      console.log("✅ Estados cargados:", estados);
-    } catch (err) {
-      console.error("❌ Error al consultar estados en DIPOMEX:", err);
+  //     setEstadosBD(estados);
+  //     console.log("✅ Estados cargados:", estados);
+  //   } catch (err) {
+  //     console.error("❌ Error al consultar estados en DIPOMEX:", err);
+  //   }
+  // };
+const fetchEstados = async () => {
+  try {
+    const res = await fetch("/estados.json"); // Asegúrate de que este archivo esté en /public
+    const json = await res.json();
+
+    if (!json.estados || !Array.isArray(json.estados)) {
+      console.warn("⚠️ El archivo no contiene una lista válida en 'estados'");
+      return;
     }
-  };
 
+    const resultado = json.estados.map(item => ({
+      id: item.ESTADO_ID,
+      nombre: item.ESTADO,
+    }));
 
+    console.log("Estados filtrados:", resultado);
+    setEstadosBD(resultado);
+  } catch (err) {
+    console.error("❌ Error al consultar estados:", err);
+  }
+};
+
+// const fetchMunicipios = async (estadoId) => {
+//   try {
+//     // const res = await fetch(
+//     //   `https://api.copomex.com/query/get_municipio_por_estado/${estadoId}?token=pruebas`
+//     // );
+//     // productivo 
+//     const res = await fetch(`https://api.tau.com.mx/dipomex/v1/municipios?id_estado=${estadoId}`, {
+//         headers: {
+//           APIKEY: '272406fa9058c2494438c4872b8dba1450c0cbc1'
+//         }
+//     });
+//     // PRUEBAS
+//     // const res = await fetch(`/api/dipomex/v1/municipios?id_estado=${estadoId}`, {
+//     //     headers: {
+//     //       APIKEY: '272406fa9058c2494438c4872b8dba1450c0cbc1'
+//     //     }
+//     // });
+
+//     const data = await res.json();
+
+//       if (!data.municipios || !Array.isArray(data.municipios)) {
+//         console.error("⚠️ No llegaron municipios válidos:", data);
+//         return;
+//       }
+    
+//     const municipios = data.municipios.map((item) => ({
+//       id: item.MUNICIPIO_ID,
+//       nombre: item.MUNICIPIO,
+//       id_estado: item.ESTADO_ID,
+//     }));
+    
+//     setMunicipiosBD(municipios);
+//   } catch (err) {
+//     console.error("❌ Error al consultar municipios en Copomex:", err);
+//   }
+// };
 const fetchMunicipios = async (estadoId) => {
   try {
-    // const res = await fetch(
-    //   `https://api.copomex.com/query/get_municipio_por_estado/${estadoId}?token=pruebas`
-    // );
-    // productivo 
-    const res = await fetch(`https://api.tau.com.mx/dipomex/v1/municipios?id_estado=${estadoId}`, {
-        headers: {
-          APIKEY: '272406fa9058c2494438c4872b8dba1450c0cbc1'
-        }
-    });
-    // PRUEBAS
-    // const res = await fetch(`/api/dipomex/v1/municipios?id_estado=${estadoId}`, {
-    //     headers: {
-    //       APIKEY: '272406fa9058c2494438c4872b8dba1450c0cbc1'
-    //     }
-    // });
+    const res = await fetch("/estado_mun.json"); // Asegúrate de que este archivo esté en /public
+    const municipiosData = await res.json();
 
-    const data = await res.json();
+    if (!municipiosData.datos || !Array.isArray(municipiosData.datos)) {
+      console.warn("⚠️ El archivo no contiene una lista válida en 'datos'");
+      return;
+    }
 
-      if (!data.municipios || !Array.isArray(data.municipios)) {
-        console.error("⚠️ No llegaron municipios válidos:", data);
-        return;
-      }
-    
-    const municipios = data.municipios.map((item) => ({
-      id: item.MUNICIPIO_ID,
-      nombre: item.MUNICIPIO,
-      id_estado: item.ESTADO_ID,
+    // Buscar el estado por ID
+    const estadoObj = municipiosData.datos.find(e => e.ESTADO_ID === estadoId);
+
+    if (!estadoObj || !Array.isArray(estadoObj.municipios)) {
+      console.warn(`⚠️ No se encontraron municipios para el estado ${estadoId}`);
+      return;
+    }
+
+    const resultado = estadoObj.municipios.map(m => ({
+      id: m.MUNICIPIO_ID,
+      nombre: m.MUNICIPIO
     }));
-    
-    setMunicipiosBD(municipios);
+    console.log("Municipios filtrados:", resultado);
+
+    setMunicipiosBD(resultado);
   } catch (err) {
-    console.error("❌ Error al consultar municipios en Copomex:", err);
+    console.error("❌ Error al consultar colonias:", err);
   }
 };
 
   // PRUEBAS DE API DE COLONIAS
+// const fetchColonias = async (estadoId, municipioId) => {
+//   try {
+//     // const res = await fetch(
+//     //   `https://api.copomex.com/query/get_colonia_por_cp/${cp}?token=pruebas`
+//     // );
+//     //
+//     // productivo
+//       const res = await fetch(`https://api.tau.com.mx/dipomex/v1/colonias?id_estado=${estadoId}&id_mun=${municipioId}`, {
+//         method: 'GET',
+//         headers: {
+//           APIKEY: '272406fa9058c2494438c4872b8dba1450c0cbc1'
+//         }
+//       });
+//     // PRUEBAS
+//     // const res = await fetch(`/api/dipomex/v1/colonias?id_estado=${estadoId}&id_mun=${municipioId}`, {
+//     //     method: 'GET',
+//     //     headers: {
+//     //       APIKEY: '272406fa9058c2494438c4872b8dba1450c0cbc1'
+//     //     }
+//     //   });
+//     const data = await res.json();
+
+//       if (!data.colonias || !Array.isArray(data.colonias)) {
+//         console.error("⚠️ No llegaron colonias válidos:", data);
+//         return;
+//       }
+//       debugger
+//       const colonias = data.colonias.map((item) => ({
+//         id: item.ASENTA_ID,
+//         nombre: item.COLONIA,
+//         cp: item.CP,
+//         id_estado: item.ESTADO_ID,
+//         id_municipio: item.MUNICIPIO_ID,
+//       }));
+//     //     const municipios = data.municipios.map((item) => ({
+//     //   id: item.MUNICIPIO_ID,
+//     //   nombre: item.MUNICIPIO,
+//     //   id_estado: item.ESTADO_ID,
+//     // }));
+
+//     setColoniasBD(colonias);
+//   } catch (err) {
+//     console.error("❌ Error al consultar colonias en Copomex:", err);
+//   }
+// };
+
 const fetchColonias = async (estadoId, municipioId) => {
   try {
-    // const res = await fetch(
-    //   `https://api.copomex.com/query/get_colonia_por_cp/${cp}?token=pruebas`
-    // );
-    //
-    // productivo
-      const res = await fetch(`https://api.tau.com.mx/dipomex/v1/colonias?id_estado=${estadoId}&id_mun=${municipioId}`, {
-        method: 'GET',
-        headers: {
-          APIKEY: '272406fa9058c2494438c4872b8dba1450c0cbc1'
-        }
-      });
-    // PRUEBAS
-    // const res = await fetch(`/api/dipomex/v1/colonias?id_estado=${estadoId}&id_mun=${municipioId}`, {
-    //     method: 'GET',
-    //     headers: {
-    //       APIKEY: '272406fa9058c2494438c4872b8dba1450c0cbc1'
-    //     }
-    //   });
+    const res = await fetch("/estructura_colonias.json"); // archivo en /public
     const data = await res.json();
 
-      if (!data.colonias || !Array.isArray(data.colonias)) {
-        console.error("⚠️ No llegaron colonias válidos:", data);
-        return;
-      }
-      debugger
-      const colonias = data.colonias.map((item) => ({
-        id: item.ASENTA_ID,
-        nombre: item.COLONIA,
-        cp: item.CP,
-        id_estado: item.ESTADO_ID,
-        id_municipio: item.MUNICIPIO_ID,
-      }));
-    //     const municipios = data.municipios.map((item) => ({
-    //   id: item.MUNICIPIO_ID,
-    //   nombre: item.MUNICIPIO,
-    //   id_estado: item.ESTADO_ID,
-    // }));
+    const estadoData = data[estadoId];
+    if (!estadoData) {
+      console.warn(`⚠️ Estado ID "${estadoId}" no encontrado`);
+      return;
+    }
 
-    setColoniasBD(colonias);
+    // Buscar el nombre del municipio que contiene ese municipioId
+    const municipioEntry = Object.entries(estadoData).find(([nombreMunicipio, municipiosPorId]) =>
+      municipiosPorId.hasOwnProperty(municipioId)
+    );
+
+    if (!municipioEntry) {
+      console.warn(`⚠️ Municipio ID "${municipioId}" no encontrado en estado "${estadoId}"`);
+      return;
+    }
+
+    const [municipioNombre, municipiosPorId] = municipioEntry;
+    const municipioData = municipiosPorId[municipioId];
+
+    if (!municipioData || !Array.isArray(municipioData.colonias)) {
+      console.warn("⚠️ No hay colonias válidas");
+      return;
+    }
+
+    const resultado = municipioData.colonias.map(item => ({
+      id: item.ASENTA_ID,
+      nombre: item.COLONIA,
+      cp: item.CP,
+      id_estado: item.ESTADO_ID,
+      id_municipio: item.MUNICIPIO_ID,
+    }));
+
+    console.log("Colonias filtradas:", resultado);
+    setColoniasBD(resultado);
   } catch (err) {
-    console.error("❌ Error al consultar colonias en Copomex:", err);
+    console.error("❌ Error al consultar colonias:", err);
   }
 };
+
+
 
 
   const guardarPaciente = async () => {
